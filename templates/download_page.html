@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download Diplomi</title>
+    <style>
+        body { font-family: sans-serif; margin: 50px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        h1 { color: #007bff; }
+        .success-message { color: green; font-weight: bold; margin-bottom: 20px; }
+        .download-button { 
+            display: inline-block; 
+            padding: 15px 30px; 
+            background-color: #822433; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-size: 1.2em;
+            transition: background-color 0.3s;
+        }
+        .download-button:hover { background-color: #6a1c29; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Generazione Completata!</h1>
+        <p class="success-message">Sono stati generati {{ pdf_count }} file PDF correttamente.</p>
+        
+        <a href="{{ url_for('download_batch') }}" class="download-button">
+            Scarica File ZIP
+        </a>
+        
+        <p style="margin-top: 30px;">Una volta scaricato, puoi tornare alla pagina di <a href="{{ url_for('index') }}">Upload</a> per un nuovo batch.</p>
+    </div>
+</body>
+</html>

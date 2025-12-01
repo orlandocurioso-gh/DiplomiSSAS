@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Errore Generazione Diplomi</title>
+    <style>
+        body { font-family: sans-serif; margin: 50px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #ff4444; border-radius: 8px; background-color: #ffeaea; }
+        h1 { color: #ff4444; }
+        .error-message { font-weight: bold; margin-bottom: 20px; }
+        .back-link { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>❌ Errore!</h1>
+        <p class="error-message">
+            Si è verificato un problema durante l'elaborazione del file:
+        </p>
+        <p>
+            **{{ message }}**
+        </p>
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">Torna alla pagina di Upload</a>
+        </div>
+    </div>
+</body>
+</html>

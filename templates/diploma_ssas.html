@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diploma Scuola Superiore di Studi Avanzati</title>
+    <style>
+        @font-face {
+        font-family: 'Sapienza';
+        src: url('/static/font//Sapienza/Sapienza-RegularSC.otf') format('opentype');
+        font-weight: normal; /* Aggiungi questa linea per chiarezza */
+        }
+
+        /* Regola per la versione grassetto */
+        @font-face {
+            font-family: 'Sapienza';
+            src: url('/static/font/Sapienza/Sapienza-BoldSC.otf') format('opentype');
+            font-weight: bold; /* CRUCIALE: Questo collega il file alla variante 'bold' */
+        }
+
+        @font-face {
+            font-family: 'open-sans';
+            src: url('/static/font/open-sans/OpenSans-Regular.ttf') format('truetype');
+            font-weight: regular; 
+        }
+
+        @font-face {
+            font-family: 'open-sans';
+            src: url('/static/font/open-sans/OpenSans-Bold.ttf') format('truetype');
+            font-weight: bold; 
+        }
+        
+        @page {
+            size: A3 landscape; 
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Sapienza', serif;
+            font-variant: small-caps;
+            margin-left: 80px;
+            padding: 0;
+            width: 420mm; 
+            height: 297mm; 
+            position: relative;
+            box-sizing: border-box;
+            background-image: url('imglib/sfondo_diploma_ssas.png'); /* ⬅️ Usa il nome esatto del tuo file */
+            background-size: cover; /* Assicura che l'immagine copra l'intera area A3 */
+            background-repeat: no-repeat;
+            line-height: 24px;
+            color: #333;
+        }
+
+        /* --- CONTENITORE PRINCIPALE DEL TESTO (SOLO COLONNA DESTRA) --- */
+        .text-column {
+            position: absolute;
+            top: 0;
+            /* Inizia a circa 130mm dal bordo sinistro per saltare l'area grafica */
+            left: 130mm; 
+            /* Larghezza del testo (420mm - 130mm = 290mm). Lasciamo un margine destro di 20mm. */
+            width: 270mm; 
+            height: 100%;
+            padding: 20mm 20mm 20mm 0; /* Padding solo verticale (top/bottom) */
+            box-sizing: border-box;
+            text-align: left;
+            /* background-color: rgba(255, 0, 0, 0.1); /* DEBUG: Rimuovere dopo il test */
+        }
+
+        /* --- STILI TESTO DIPLOMA --- */
+
+        .diploma-title {
+            font-size: 30pt;
+            font-weight: regular;
+            color: #822433;
+            margin-bottom: 24px;
+        }
+        .section-header {
+            font-size: 24pt;
+            /*margin-top: 2mm;*/
+            margin-bottom: 2mm;
+            line-height: 0.5;
+        }
+        .section-header-rilasciato {
+            font-family: 'open-sans', serif;
+            font-size: 10pt;
+            font-variant: normal;
+            margin-top: 5mm;
+            margin-bottom: 2mm;
+            line-height: 1.2;
+        }
+        .siAttesta{
+            height: 80px;
+            font-size: 24pt;
+            margin-top: 10mm;
+            margin-bottom: 5mm;
+            line-height: 34pt;
+        }
+        .student-name {
+            font-size: 30pt;
+            font-weight: bold;
+            color: #000;
+            margin-top: 10mm;
+            margin-bottom: 5mm;
+            line-height: 28px;
+        }
+        .birth-info {
+            font-family: 'open-sans', sans-serif;
+            font-size: 12pt;
+            margin-bottom: 20mm;
+            font-variant: normal;
+        }
+        .body-text {
+            height: 160px;
+            font-size: 24pt;
+            margin-top: 10mm;
+            margin-bottom: 5mm;
+            line-height: 34pt;
+            /*border: 1px solid black;*/
+        }
+        /*.corso-text {
+            height: 80px;
+            font-size: 24pt;
+            font-weight: bold;            
+            margin-top: 2mm;
+            margin-bottom: 10mm;
+            line-height: 34pt;
+            border: 1px solid black;
+        }*/
+
+        /* --- FIRMA E PIEDE DI PAGINA --- */
+
+        .signature-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 25mm;
+            margin-bottom: 35mm;
+            /*border: 1px solid black;*/
+            /* Rimuove padding-right perché la larghezza è già controllata da .text-column */
+        }
+        .signature-block {
+            text-align: center;
+            width: 40%;
+            font-size: 15pt;
+            /*border: 1px solid black;*/
+        }
+        .signer-title {
+            /*font-weight: bold;*/
+            margin-bottom: 3px;
+        }
+        .date-location {
+            width: 40%;
+            text-align: left;
+            font-size: 15pt;
+        }
+        
+        .footer-legal {
+            font-family: 'open-sans', sans-serif;
+            font-size: 9pt;
+            margin-top: 10mm;
+            line-height: 1.5;
+            font-variant: normal;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="text-column">
+        <p class="diploma-title">DIPLOMA</p>
+
+        <p class="section-header-rilasciato">Rilasciato ai sensi del Regolamento Didattico di Ateneo</p>
+        <p class="section-header">Anno Accademico {{ anno_accademico }}</p>
+
+        <p class="siAttesta">Si attesta che</p>
+
+        <p class="student-name">{{ nom_cog }}</p>
+        <p class="birth-info">{{ sesso_formattato|capitalize }} {{ comune_nascita }}, il {{ data_di_nascita }}</p>
+
+        <p class="body-text">HA CONCLUSO PRESSO {{ tipologia_corso }}
+        <!--<p class="corso-text">{{ dipartimento }}</p>-->
+        IL PERCORSO FORMATIVO TRIENNALE NELLA<BR>
+        <B>CLASSE ACCADEMICA {{ corso_laurea }}</B></p>
+
+        <div class="signature-line">
+            <div class="date-location">
+                Roma, {{ datastampa }}
+            </div>
+            <div class="signature-block">
+                <p class="signer-title">Il Direttore della {{ dipartimento }}</p>
+            </div>
+        </div>
+
+        <p class="footer-legal">
+            Istituita con Decreto Rettorale n. <B>397/2009</B> del <B>30/07/2009</B>. Le attività complessive del corso corrispondono a {{ cfu }} crediti formativi universitari.
+        </p>
+
+    </div>
+
+</body>
+</html>
