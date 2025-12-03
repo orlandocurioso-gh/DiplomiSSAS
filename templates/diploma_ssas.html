@@ -5,14 +5,14 @@
     <style>
         @font-face {
         font-family: 'Sapienza';
-        src: url('/static/font//Sapienza/Sapienza-RegularSC.otf') format('opentype');
+        src: url('font/Sapienza/Sapienza-Regular.otf') format('opentype');
         font-weight: normal; /* Aggiungi questa linea per chiarezza */
         }
 
         /* Regola per la versione grassetto */
         @font-face {
             font-family: 'Sapienza';
-            src: url('/static/font/Sapienza/Sapienza-BoldSC.otf') format('opentype');
+            src: url('font/Sapienza/Sapienza-Bold.otf') format('opentype');
             font-weight: bold; /* CRUCIALE: Questo collega il file alla variante 'bold' */
         }
 
@@ -54,7 +54,8 @@
             position: absolute;
             top: 0;
             /* Inizia a circa 130mm dal bordo sinistro per saltare l'area grafica */
-            left: 130mm; 
+            left: 130mm;
+            margin-top: 12px; 
             /* Larghezza del testo (420mm - 130mm = 290mm). Lasciamo un margine destro di 20mm. */
             width: 270mm; 
             height: 100%;
@@ -67,7 +68,7 @@
         /* --- STILI TESTO DIPLOMA --- */
 
         .diploma-title {
-            font-size: 30pt;
+            font-size: 31pt;
             font-weight: regular;
             color: #822433;
             margin-bottom: 24px;
@@ -80,7 +81,7 @@
         }
         .section-header-rilasciato {
             font-family: 'open-sans', serif;
-            font-size: 10pt;
+            font-size: 8pt;
             font-variant: normal;
             margin-top: 5mm;
             margin-bottom: 2mm;
@@ -89,7 +90,7 @@
         .siAttesta{
             height: 80px;
             font-size: 24pt;
-            margin-top: 10mm;
+            margin-top: 15mm;
             margin-bottom: 5mm;
             line-height: 34pt;
         }
@@ -97,9 +98,10 @@
             font-size: 30pt;
             font-weight: bold;
             color: #000;
-            margin-top: 10mm;
+            margin-top: 5mm;
             margin-bottom: 5mm;
             line-height: 28px;
+            color: #822433;
         }
         .birth-info {
             font-family: 'open-sans', sans-serif;
@@ -111,7 +113,7 @@
             height: 160px;
             font-size: 24pt;
             margin-top: 10mm;
-            margin-bottom: 5mm;
+            margin-bottom: 30mm;
             line-height: 34pt;
             /*border: 1px solid black;*/
         }
@@ -131,8 +133,8 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-top: 25mm;
-            margin-bottom: 35mm;
+            margin-top: 15mm;
+            margin-bottom: 15mm;
             /*border: 1px solid black;*/
             /* Rimuove padding-right perché la larghezza è già controllata da .text-column */
         }
@@ -140,7 +142,6 @@
             text-align: center;
             width: 40%;
             font-size: 15pt;
-            /*border: 1px solid black;*/
         }
         .signer-title {
             /*font-weight: bold;*/
@@ -150,15 +151,21 @@
             width: 40%;
             text-align: left;
             font-size: 15pt;
+            margin-bottom: 85px;
         }
         
         .footer-legal {
             font-family: 'open-sans', sans-serif;
             font-size: 9pt;
-            margin-top: 10mm;
+            margin-top: 5mm; /*era 10*/
+            margin-bottom: 80px;
             line-height: 1.5;
             font-variant: normal;
             color: #555;
+        }
+        .firma-img-preside {
+            width: 150px; /* CAMBIATO: Prova con una larghezza fissa, non max-width */
+            height: auto;
         }
     </style>
 </head>
@@ -167,30 +174,41 @@
     <div class="text-column">
         <p class="diploma-title">DIPLOMA</p>
 
-        <p class="section-header-rilasciato">Rilasciato ai sensi del Regolamento Didattico di Ateneo</p>
+        <p class="section-header-rilasciato">Rilasciato ai sensi del Regolamento per la selezione e l'ammissione degli studenti e per l'attività didattica della Scuola Superiore di Studi Avanzati (d.r. n.1134 del 29.04.2016)</p>
         <p class="section-header">Anno Accademico {{ anno_accademico }}</p>
 
         <p class="siAttesta">Si attesta che</p>
 
         <p class="student-name">{{ nom_cog }}</p>
-        <p class="birth-info">{{ sesso_formattato|capitalize }} {{ comune_nascita }}, il {{ data_di_nascita }}</p>
+        <p class="birth-info">{{ sesso_formattato }} {{ luogo_nascita_formattato }}, il {{ data_di_nascita }}</p>
 
-        <p class="body-text">HA CONCLUSO PRESSO {{ tipologia_corso }}
+        <p class="body-text">ha concluso presso la <BR> <span style="color: #822433;">scuola superiore di studi avanzati</span>
         <!--<p class="corso-text">{{ dipartimento }}</p>-->
-        IL PERCORSO FORMATIVO TRIENNALE NELLA<BR>
-        <B>CLASSE ACCADEMICA {{ corso_laurea }}</B></p>
+        <BR> il percorso formativo {{ tipologia_corso }} nella<BR>
+        <B>classe accademica {{ corso_laurea }}</B></p>
 
         <div class="signature-line">
             <div class="date-location">
                 Roma, {{ datastampa }}
             </div>
             <div class="signature-block">
-                <p class="signer-title">Il Direttore della {{ dipartimento }}</p>
+                {% if firma_filename.startswith('F_') %}
+                    <p class="signer-title">La Direttrice</p>
+                {% else %}
+                    <p class="signer-title">Il Direttore</p>
+                {% endif %}
+                
+                <img src="imglib/{{ firma_filename }}" class="firma-img-preside" alt="Firma">
             </div>
         </div>
 
         <p class="footer-legal">
-            Istituita con Decreto Rettorale n. <B>397/2009</B> del <B>30/07/2009</B>. Le attività complessive del corso corrispondono a {{ cfu }} crediti formativi universitari.
+            {% if 'master' in master %}
+            Scuola istituita con decreto rettorale n. 397/2009 del 30.07.2009. Le attività complessive del corso corrispondono a {{ cfu }} crediti formativi universitari
+            Diploma equiparato al Master di II livello ai sensi dell'art. 19, comma 3, del d.l. 76/2020, convertito con modifiche dalla l. 120/2020 e del d.m. 1093/2021
+            {% else %}
+            <span style="margin-top:40px !important; ">Scuola istituita con decreto rettorale n. 397/2009 del 30.07.2009. Le attività complessive del corso corrispondono a {{ cfu }} crediti formativi universitari</span>
+            {% endif %}
         </p>
 
     </div>

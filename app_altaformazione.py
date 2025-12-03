@@ -78,7 +78,7 @@ def parse_excel_data(file_stream):
             
             # Nome e Cognome uniti
             nome_completo = f"{student_dict.get('nome', '')} {student_dict.get('cognome', '')}"
-            student_dict['nom_cog'] = nome_completo.strip()
+            student_dict['nom_cog'] = nome_completo.strip().capitalize()
             
             # Formattazione per "nato a" / "nata a"
             sesso = student_dict.get('sesso', '').upper()
@@ -90,10 +90,44 @@ def parse_excel_data(file_stream):
             # ma la mantengo se necessaria per altri testi:
             first_letter = student_dict.get('nom_cog', ' ')[0].upper()
             student_dict['intro_nome'] = 'Ad' if first_letter in ['A', 'E', 'I', 'O', 'U'] else 'A'
+
+            # --- LOGICA COMPLESSA LUOGO DI NASCITA ---
+            comune = student_dict.get('nato_a', '').strip()
+            provincia = student_dict.get('provincia_di_nascita', '').strip()
+            stato = student_dict.get('stato_di_nascita', '').strip()
+
+            luogo_nascita = comune
+            
+            # Normalizzazione per confronti (ignora maiuscole/minuscole e spazi)
+            comune_upper = comune.upper().replace(' ', '')
+            provincia_upper = provincia.upper().replace(' ', '')
+            stato_upper = stato.upper().replace(' ', '')
+            
+            # Determina se la nascita è in Italia (stato vuoto o Italia/IT)
+            # Spesso i campi italiani hanno stato vuoto, o "Italia", o "IT".
+            is_italy = not stato_upper or stato_upper in ['ITALIA', 'IT', 'I']
+
+            if is_italy:
+                # Gestione Nascita in Italia (Casi 1 & 2)
+                if provincia_upper and comune_upper == provincia_upper:
+                    # Caso 1: Città = Provincia (es. ROMA) -> Scrivo solo la città
+                    luogo_nascita = comune.capitalize()
+                elif provincia_upper:
+                    # Caso 2: Città != Provincia (es. Frascati (Roma)) -> Scrivo Città (Provincia)
+                    luogo_nascita = f"{comune.capitalize()} ({provincia.capitalize()})"
+                # Se non c'è provincia, resta solo il comune (luogo_nascita = comune)
+            
+            elif stato:
+                # Caso 3: Nascita Estera (es. Suceava (ROMANIA))
+                luogo_nascita = f"{comune.capitalize()} ({stato.capitalize()})"
+
+            # Salva il risultato finale nel nuovo campo
+            student_dict['luogo_nascita_formattato'] = luogo_nascita
             
             # Formattazione della data di stampa (data del diploma)
             # Assumo che 'data_diploma' sia una data leggibile o un oggetto datetime
-            data_diploma_raw = student_dict.get('data_di_stampa', '')
+            data_diploma_raw = student_dict.get('data', '')
+            data_nascita_raw = student_dict.get('data_di_nascita', '')
             try:
                 # Tenta di convertire e formattare se è una data valida
                 if data_diploma_raw:
@@ -110,17 +144,43 @@ def parse_excel_data(file_stream):
             except Exception as e:
                 print(f"Errore formattazione data: {e}") # Debugging
                 student_dict['datastampa'] = data_diploma_raw # Mantiene il testo originale
-            
-            # --- 2. Mappatura Campi Semplici/Ridenominati per il Template ---
 
-            student_dict['dipartimento'] = student_dict.get('dipartimento_di', '')
-            student_dict['corso_laurea'] = student_dict.get('descrizione_corso', '')
-            student_dict['tipologia_corso'] = student_dict.get('tipologia_corso', '')
+            try:
+                # Tenta di convertire e formattare se è una data valida
+                if data_nascita_raw:
+                    if isinstance(data_nascita_raw, str):
+                        # Tenta di parsare la stringa se non è già un datetime
+                        data_obj = pd.to_datetime(data_nascita_raw, dayfirst=True)
+                    else:
+                        data_obj = data_nascita_raw
+                        
+                    # Formattazione come "1 dicembre 2025"
+                    data_formattata= data_obj.strftime('%#d %B %Y')
+                    """
+                    parti = data_formattata.split()
+                    if len(parti) > 1:
+                        # Capitalizza la seconda parola (il mese)
+                        parti[1] = parti[1].capitalize()
+                    """
+                    student_dict['data_di_nascita'] = data_formattata
+                else:
+                    student_dict['data_di_nascita'] = 'Data non disponibile'
+            except Exception as e:
+                print(f"Errore formattazione data: {e}") # Debugging
+                student_dict['data_di_nascita'] = data_nascita_raw # Mantiene il testo originale
+
+            # --- 2. Mappatura Campi Semplici/Ridenominati per il Template ---
+            #student_dict['comune_nascita'] = student_dict.get('nato_a', '').capitalize()
+            #student_dict['provincia'] = student_dict.get('provincia_di_nascita', '').capitalize()
+            #student_dict['stato'] = student_dict.get('stato_di_nascita', '').capitalize()
+            #student_dict['dipartimento'] = student_dict.get('dipartimento_di', '')
+            student_dict['master'] = student_dict.get('master', '')
+            student_dict['corso_laurea'] = student_dict.get('tipologia', '')
+            student_dict['tipologia_corso'] = student_dict.get('classe_accademica', '').lower()
             # Il campo 'cfu' è già presente come cfu nel template
             # I campi anno_accademico, comune_nascita, data_di_nascita sono già mappati correttamente.
             
             normalized_data.append(student_dict)
-
         return normalized_data
         
     except Exception as e:
@@ -155,6 +215,7 @@ def index():
 # --- ROUTE 2: Gestione dell'Upload e della Generazione PDF ---
 @app.route('/upload_excel', methods=['POST'])
 def upload_excel():
+    NOME_FILE_FIRMA = 'M_mgcrespi.png' # Esempio di file (maschile)
     if 'file' not in request.files or request.files['file'].filename == '':
         return render_template('error.html', message="Nessun file selezionato."), 400
     
@@ -186,7 +247,7 @@ def upload_excel():
             # ... (logica di preparazione dei dati e elisione AD/A) ...
             
             template_filename = 'diploma_ssas.html' 
-            
+            student['firma_filename'] = 'M_mgcrespi.png'
             # Utilizza il nome del corso e matricola per il nome file
             output_filename = f"{student.get('cognome','Sconosciuto')}_{student.get('matricola', i)}.pdf"
             output_path = os.path.join(TEMP_PDF_DIR, output_filename)
