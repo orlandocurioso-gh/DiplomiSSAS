@@ -44,6 +44,37 @@ TEMP_PDF_DIR = os.path.join(app.root_path, 'temp_pdfs_af')
 # ...
 
 # --- FUNZIONE DI PARSING DA EXCEL ---
+
+def format_name_with_exceptions(name_str):
+    """
+    Formatta una stringa di nome/cognome:
+    1. Capitalizza le parole standard (es. Rossi -> Rossi).
+    2. Converte in minuscolo le parole precedute dal prefisso '%' (es. %DE -> de).
+    3. Rimuove il prefisso '%'.
+    """
+    if not name_str:
+        return ""
+
+    # Split la stringa in parole
+    words = name_str.split()
+    formatted_parts = []
+    
+    for word in words:
+        if word.startswith('%'):
+            # Caso Eccezione: Rimuovi '%' e converti il resto in minuscolo
+            # Esempio: "%DE" -> "de"
+            cleaned_word = word[1:].lower()
+            formatted_parts.append(cleaned_word)
+        else:
+            # Caso Standard: Converte la parola in minuscolo e capitalizza la prima lettera
+            # Esempio: "MARIO" -> "Mario"
+            formatted_parts.append(word.lower().capitalize())
+            
+    return ' '.join(formatted_parts)
+
+
+
+
 def parse_excel_data(file_stream):
     import pandas as pd
     from io import BytesIO # Assicurati che BytesIO sia importato
@@ -78,8 +109,8 @@ def parse_excel_data(file_stream):
             
             # Nome e Cognome uniti
             nome_completo = f"{student_dict.get('nome', '')} {student_dict.get('cognome', '')}"
-            student_dict['nom_cog'] = nome_completo.strip().capitalize()
-            
+            #student_dict['nom_cog'] = nome_completo.strip().capitalize()
+            student_dict['nom_cog'] = format_name_with_exceptions(nome_completo.strip())           
             # Formattazione per "nato a" / "nata a"
             sesso = student_dict.get('sesso', '').upper()
             student_dict['sesso_formattato'] = 'nato a' if sesso == 'M' else 'nata a'
