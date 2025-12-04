@@ -163,6 +163,9 @@
             font-variant: normal;
             color: #555;
         }
+        .footer-short {
+            margin-top: 20mm; /* ⬅️ Aumenta questo valore per spostare il testo verso il basso */
+        }
         .firma-img-preside {
             width: 150px; /* CAMBIATO: Prova con una larghezza fissa, non max-width */
             height: auto;
@@ -202,16 +205,16 @@
             </div>
         </div>
 
+        {% if 'master' in master %}
         <p class="footer-legal">
-            {% if 'master' in master %}
             Scuola istituita con decreto rettorale n. 397/2009 del 30.07.2009. Le attività complessive del corso corrispondono a {{ cfu }} crediti formativi universitari
             Diploma equiparato al Master di II livello ai sensi dell'art. 19, comma 3, del d.l. 76/2020, convertito con modifiche dalla l. 120/2020 e del d.m. 1093/2021
-            {% else %}
-            <span style="margin-top:40px !important; ">Scuola istituita con decreto rettorale n. 397/2009 del 30.07.2009. Le attività complessive del corso corrispondono a {{ cfu }} crediti formativi universitari</span>
-            {% endif %}
         </p>
-
+        {% else %}
+        <p class="footer-legal footer-short"> 
+            Scuola istituita con decreto rettorale n. 397/2009 del 30.07.2009. Le attività complessive del corso corrispondono a {{ cfu }} crediti formativi universitari
+        </p>
+        {% endif %}
     </div>
-
 </body>
 </html>
