@@ -244,6 +244,8 @@ def upload_excel():
     file = request.files['file']
         
     if file and allowed_file(file.filename):
+        original_filename = file.filename
+        session['original_excel_filename'] = original_filename
         students_data = parse_excel_data(file) 
         
         if students_data is None or not students_data:
@@ -306,9 +308,18 @@ def download_page():
 @app.route('/download-batch')
 def download_batch():
     pdf_paths = session.pop('generated_pdf_paths', None) # Preleva i percorsi e pulisci la sessione
-    
+    original_filename = session.pop('original_excel_filename', 'diplomi_alta_formazione.zip')
     if not pdf_paths:
         return render_template('error.html', message="Nessun file PDF da scaricare. Riprova con un nuovo upload."), 404
+
+    # Genera il nome del file ZIP
+    if original_filename.endswith('.xlsx'):
+        zip_name = original_filename.replace('.xlsx', '.zip')
+    elif original_filename.endswith('.xls'):
+        zip_name = original_filename.replace('.xls', '.zip')
+    else:
+        # Fallback se l'estensione non è stata trovata o era un caso limite
+        zip_name = 'diplomi_alta_formazione.zip'
 
     # Crea un file ZIP in memoria (non su disco)
     zip_buffer = BytesIO()
@@ -328,7 +339,7 @@ def download_batch():
         zip_buffer,
         mimetype='application/zip',
         as_attachment=True,
-        download_name='diplomi_alta_formazione.zip'
+        download_name=zip_name
     )
 
 if __name__ == '__main__': app.run(debug=True)
