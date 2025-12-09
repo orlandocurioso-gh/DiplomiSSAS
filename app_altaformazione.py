@@ -88,7 +88,7 @@ def parse_excel_data(file_stream):
         # 2. Leggi dal buffer in memoria
         # Usa sheet_name=0 per leggere il primo foglio
         # Usa header=1 per saltare la riga vuota iniziale (indice 0)
-        df = pd.read_excel(excel_data_buffer, header=0, sheet_name=0,engine='openpyxl') 
+        df = pd.read_excel(excel_data_buffer, header=0, sheet_name=0,engine='openpyxl',dtype={'data': str, 'data_di_nascita': str}) 
         
         # 3. Pulisce i nomi delle colonne
         df.columns = df.columns.str.strip().str.replace('\n', ' ').str.replace(' ', '_')
@@ -109,7 +109,6 @@ def parse_excel_data(file_stream):
             
             # Nome e Cognome uniti
             nome_completo = f"{student_dict.get('nome', '')} {student_dict.get('cognome', '')}"
-            #student_dict['nom_cog'] = nome_completo.strip().capitalize()
             student_dict['nom_cog'] = format_name_with_exceptions(nome_completo.strip())           
             # Formattazione per "nato a" / "nata a"
             sesso = student_dict.get('sesso', '').upper()
@@ -153,21 +152,17 @@ def parse_excel_data(file_stream):
                 luogo_nascita = f"{comune.capitalize()} ({stato.capitalize()})"
 
             # Salva il risultato finale nel nuovo campo
-            student_dict['luogo_nascita_formattato'] = luogo_nascita
-            
+            student_dict['luogo_nascita_formattato'] = luogo_nascita           
             # Formattazione della data di stampa (data del diploma)
             # Assumo che 'data_diploma' sia una data leggibile o un oggetto datetime
-            data_diploma_raw = student_dict.get('data', '')
-            data_nascita_raw = student_dict.get('data_di_nascita', '')
+            data_diploma_raw = str(student_dict.get('data', '').strip())
+            data_nascita_raw = str(student_dict.get('data_di_nascita', '').strip())
             try:
                 # Tenta di convertire e formattare se è una data valida
                 if data_diploma_raw:
-                    if isinstance(data_diploma_raw, str):
-                        # Tenta di parsare la stringa se non è già un datetime
-                        data_obj = pd.to_datetime(data_diploma_raw, dayfirst=True)
-                    else:
-                        data_obj = data_diploma_raw
-                        
+                    data_obj = pd.to_datetime(data_diploma_raw, format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                    if pd.isna(data_obj): # Se la data non è valida dopo il tentativo
+                        raise ValueError(f"Formato data non valido: {data_nascita_raw}")                   
                     # Formattazione come "1 dicembre 2025"
                     student_dict['datastampa'] = data_obj.strftime('%#d %B %Y')
                 else:
@@ -179,21 +174,17 @@ def parse_excel_data(file_stream):
             try:
                 # Tenta di convertire e formattare se è una data valida
                 if data_nascita_raw:
-                    if isinstance(data_nascita_raw, str):
-                        # Tenta di parsare la stringa se non è già un datetime
-                        data_obj = pd.to_datetime(data_nascita_raw, dayfirst=True)
-                    else:
-                        data_obj = data_nascita_raw
-                        
-                    # Formattazione come "1 dicembre 2025"
+                    data_obj = pd.to_datetime(data_nascita_raw, format='%Y-%m-%d %H:%M:%S', errors='coerce')
+
+                    if pd.isna(data_obj): # Se la data non è valida dopo il tentativo
+                        raise ValueError(f"Formato data non valido: {data_nascita_raw}")
+                    
                     data_formattata= data_obj.strftime('%#d %B %Y')
-                    """
+                    # Logica per la maiuscola sul mese (che avevi commentato ma è necessaria)
                     parti = data_formattata.split()
                     if len(parti) > 1:
-                        # Capitalizza la seconda parola (il mese)
-                        parti[1] = parti[1].capitalize()
-                    """
-                    student_dict['data_di_nascita'] = data_formattata
+                        parti[1] = parti[1]
+                    student_dict['data_di_nascita'] = ' '.join(parti)
                 else:
                     student_dict['data_di_nascita'] = 'Data non disponibile'
             except Exception as e:
@@ -206,7 +197,7 @@ def parse_excel_data(file_stream):
             #student_dict['stato'] = student_dict.get('stato_di_nascita', '').capitalize()
             #student_dict['dipartimento'] = student_dict.get('dipartimento_di', '')
             student_dict['master'] = student_dict.get('master', '')
-            student_dict['corso_laurea'] = student_dict.get('tipologia', '')
+            student_dict['corso_laurea'] = student_dict.get('tipologia', '').lower()
             student_dict['tipologia_corso'] = student_dict.get('classe_accademica', '').lower()
             # Il campo 'cfu' è già presente come cfu nel template
             # I campi anno_accademico, comune_nascita, data_di_nascita sono già mappati correttamente.
