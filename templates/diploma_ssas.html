@@ -164,10 +164,10 @@
             color: #555;
         }
         .footer-short {
-            margin-top: 20mm; /* ⬅️ Aumenta questo valore per spostare il testo verso il basso */
+            margin-top: 10mm; /* ⬅️ Aumenta questo valore per spostare il testo verso il basso */
         }
         .firma-img-preside {
-            width: 350px; /* CAMBIATO: Prova con una larghezza fissa, non max-width */
+            width: 180px; /* CAMBIATO: Prova con una larghezza fissa, non max-width */
             height: auto;
         }
     </style>
@@ -185,10 +185,10 @@
         <p class="student-name">{{ nom_cog }}</p>
         <p class="birth-info">{{ sesso_formattato }} {{ luogo_nascita_formattato }}, il {{ data_di_nascita }}</p>
 
-        <p class="body-text">ha concluso presso la <BR> <span style="color: #822433;">scuola superiore di studi avanzati</span>
+        <p class="body-text">ha concluso presso la <BR> <span style="color: #822433;">Scuola Superiore di Studi Avanzati</span>
         <!--<p class="corso-text">{{ dipartimento }}</p>-->
-        <BR> il percorso formativo {{ tipologia_corso }} nella<BR>
-        <B>classe accademica {{ corso_laurea }}</B></p>
+        <BR> il percorso formativo {{ corso_laurea }} nella<BR>
+        <B>classe accademica {{ tipologia_corso }}</B></p>
 
         <div class="signature-line">
             <div class="date-location">
