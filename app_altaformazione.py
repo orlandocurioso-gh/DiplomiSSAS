@@ -73,7 +73,40 @@ def format_name_with_exceptions(name_str):
     return ' '.join(formatted_parts)
 
 
+def format_place_name(place_str):
+    """
+    Formatta una stringa di luogo (Comune, Provincia, Stato):
+    - Title-case tutte le parole.
+    - Converte in minuscolo le preposizioni e gli articoli.
+    Esempio: "genzano di roma" -> "Genzano di Roma"
+    Esempio: "vico equense" -> "Vico Equense"
+    """
+    if not place_str:
+        return ""
 
+    # Set di preposizioni/articoli comuni da mantenere in minuscolo
+    PREPOSITIONS = {
+        'di', 'del', 'della', 'degli', 'dei', 'de', 'da', 'dal', 
+        'dalla', 'dai', 'dagli', 'su', 'sul', 'sulla', 'sui', 
+        'sugli', 'a', 'al', 'alla', 'ai', 'agli', 'in', 'nel', 
+        'nella', 'nei', 'negli', 'per', 'con', 'e'
+    }
+
+    # Converto l'intera stringa in minuscolo per processare le parole
+    words = place_str.lower().split()
+    formatted_words = []
+    
+    for i, word in enumerate(words):
+        # La prima parola e le parole non preposizioni vanno in Title Case
+        formatted_word = word.capitalize()
+        
+        # Le preposizioni successive alla prima parola vanno in minuscolo
+        if word in PREPOSITIONS and i > 0:
+            formatted_word = word.lower()
+            
+        formatted_words.append(formatted_word)
+        
+    return ' '.join(formatted_words)
 
 def parse_excel_data(file_stream):
     import pandas as pd
@@ -141,15 +174,15 @@ def parse_excel_data(file_stream):
                 # Gestione Nascita in Italia (Casi 1 & 2)
                 if provincia_upper and comune_upper == provincia_upper:
                     # Caso 1: Città = Provincia (es. ROMA) -> Scrivo solo la città
-                    luogo_nascita = comune.capitalize()
+                    luogo_nascita = format_place_name(comune)
                 elif provincia_upper:
                     # Caso 2: Città != Provincia (es. Frascati (Roma)) -> Scrivo Città (Provincia)
-                    luogo_nascita = f"{comune.capitalize()} ({provincia.capitalize()})"
+                    luogo_nascita = f"{format_place_name(comune)} ({format_place_name(provincia)})"
                 # Se non c'è provincia, resta solo il comune (luogo_nascita = comune)
             
             elif stato:
                 # Caso 3: Nascita Estera (es. Suceava (ROMANIA))
-                luogo_nascita = f"{comune.capitalize()} ({stato.capitalize()})"
+                luogo_nascita = f"{format_place_name(comune)} ({format_place_name(stato)})"
 
             # Salva il risultato finale nel nuovo campo
             student_dict['luogo_nascita_formattato'] = luogo_nascita           
