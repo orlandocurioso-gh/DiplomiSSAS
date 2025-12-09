@@ -196,7 +196,7 @@ def parse_excel_data(file_stream):
             #student_dict['provincia'] = student_dict.get('provincia_di_nascita', '').capitalize()
             #student_dict['stato'] = student_dict.get('stato_di_nascita', '').capitalize()
             #student_dict['dipartimento'] = student_dict.get('dipartimento_di', '')
-            student_dict['master'] = student_dict.get('master', '')
+            student_dict['master'] = student_dict.get('master', '').strip().lower()
             student_dict['corso_laurea'] = student_dict.get('tipologia', '').lower()
             student_dict['tipologia_corso'] = student_dict.get('classe_accademica', '').lower()
             # Il campo 'cfu' è già presente come cfu nel template
