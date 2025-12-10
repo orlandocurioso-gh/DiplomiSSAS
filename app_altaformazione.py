@@ -77,9 +77,8 @@ def format_place_name(place_str):
     """
     Formatta una stringa di luogo (Comune, Provincia, Stato):
     - Title-case tutte le parole.
-    - Converte in minuscolo le preposizioni e gli articoli.
-    Esempio: "genzano di roma" -> "Genzano di Roma"
-    Esempio: "vico equense" -> "Vico Equense"
+    - Converte in minuscolo le preposizioni, gli articoli e le forme elise ('d', 'l').
+    - Gestisce correttamente la capitalizzazione dei nomi propri con apostrofo (es. L'Aquila).
     """
     if not place_str:
         return ""
@@ -89,24 +88,51 @@ def format_place_name(place_str):
         'di', 'del', 'della', 'degli', 'dei', 'de', 'da', 'dal', 
         'dalla', 'dai', 'dagli', 'su', 'sul', 'sulla', 'sui', 
         'sugli', 'a', 'al', 'alla', 'ai', 'agli', 'in', 'nel', 
-        'nella', 'nei', 'negli', 'per', 'con', 'e','de\''
+        'nella', 'nei', 'negli', 'per', 'con', 'e', 'il', 'lo', 'la', 'gli', 'le', 
+        "d'", "l'","de'"
     }
 
     # Converto l'intera stringa in minuscolo per processare le parole
     words = place_str.lower().split()
-    formatted_words = []
+    final_formatted_words = []
     
     for i, word in enumerate(words):
-        # La prima parola e le parole non preposizioni vanno in Title Case
-        formatted_word = word.capitalize()
         
-        # Le preposizioni successive alla prima parola vanno in minuscolo
+        formatted_word = word
+        
+        # 1. Gestione di TUTTE le parole che sono solo preposizioni/articoli e non sono la prima
         if word in PREPOSITIONS and i > 0:
-            formatted_word = word.lower()
+            final_formatted_words.append(word.lower()) 
+            continue
             
-        formatted_words.append(formatted_word)
+        # 2. Gestione di Elisioni complesse con apostrofo ('d'America', 'L'Aquila')
+        if word.find('\'') != -1:
+            index = word.find('\'')
+            
+            # Parte prima dell'apostrofo (d, l, ecc.)
+            prefix = word[:index+1]
+            
+            # Parte dopo l'apostrofo (america, aquila, ecc.)
+            suffix = word[index+1:]
+            
+            if prefix.lower() in PREPOSITIONS and i > 0:
+                 # Caso d'America (non è la prima parola, e la d' è una preposizione elisa)
+                 # Manteniamo 'd' minuscola ma capitalizziamo il resto
+                 formatted_word = prefix.lower() + suffix.capitalize()
+            else:
+                 # Caso L'Aquila / D'Annunzio (o è la prima parola, o non è una preposizione)
+                 # Capitalizziamo la prima lettera del prefisso (L', D') e capitalizziamo il suffisso (Aquila, Annunzio)
+                 formatted_word = prefix.capitalize() + suffix.capitalize()
+
+        else:
+            # 3. Capitalizzazione standard (Vico, Roma, ecc.)
+            formatted_word = word.capitalize()
+            
         
-    return ' '.join(formatted_words)
+        # Aggiungo la parola formattata, a meno che non sia stata già gestita dalla 'continue'
+        final_formatted_words.append(formatted_word)
+            
+    return ' '.join(final_formatted_words)
 
 def parse_excel_data(file_stream):
     import pandas as pd
